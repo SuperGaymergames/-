@@ -65,13 +65,20 @@ class Chunk():
         self.map = [generate_tile(-1, y, self.x, self.y) for y in range(chunk_size) for x in range(chunk_size)]
 
     #render() прорисовывает нужный нам чанк, выцеживая, какая у него текстура(не прописано)
-    def render(self):
+    def render(self, texture_code):
         for y in range(chunk_size):
             for x in range(chunk_size):
-                texture = textures[self.map[x + y * chunk_size]][0]
+                texture = textures[texture_code][0]
                 screen.blit(texture, (self.x + x*tile_size - cam_x, self.y + y*tile_size - cam_y))
 
 
+#Чтение файла с кодами текстур чанков из памяти
+chuncks_file = open('chuncks.txt','r+')
+chuncks_texture_codes=[]
+for i in range(625):
+    just_code = chuncks_file.readline()
+    chuncks_texture_codes.append(int(just_code))
+chuncks_file.close()
 
 
 
@@ -79,6 +86,7 @@ class Chunk():
 
 
 
+c=0
 window = pygame.display.set_mode((0,0), pygame.RESIZABLE)
 fullscreen = pygame.display.set_mode((0,0), pygame.RESIZABLE)
 screen = pygame.transform.scale(window,res)
@@ -89,7 +97,6 @@ chunks = []
 for y in range(world_size_chunk_y):
     for x in range(world_size_chunk_x):
         chunks.append(Chunk(x*chunk_size*tile_size, y*chunk_size*tile_size))
-
 while not finished:
     clock.tick(FPS)
     screen.fill(WHITE)
@@ -113,16 +120,27 @@ while not finished:
 
     #рендерим чанки, которые отображаются на экране
     for i in chunks_on_screen():
-        chunks[i].render()
+        chunks[i].render(chuncks_texture_codes[i])
     window.blit(pygame.transform.scale(screen, res), (0, 0))
     pygame.display.update()
 
     #обработка событий
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            chuncks_file.close()
             finished = True
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
+                #делаем сохранение
+
+                chuncks_file.close()
+                chuncks_file = open('chuncks.txt','w')
+                chuncks_file.seek(0)
+                for i in range(625):
+                    chuncks_file.write(str(chuncks_texture_codes[i])+'\n')
+                chuncks_file.close()
+
+                #закрываем программу
                 finished = True
 
 pygame.quit()
