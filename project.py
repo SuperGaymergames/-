@@ -12,6 +12,7 @@ chunk_size = 1
 #tile_size соответсвует разрешению изображения
 tile_size = 150
 cam_speed = 15
+random_event_timer = -500
 
 WHITE = 0xFFFFFF
 
@@ -59,6 +60,16 @@ def generate_tile(x, y, chunk_x, chunk_y):
 def open_menu():
     pass
 
+#Функция обработки случайного события
+def random_event(key):
+    if not key in rnd_events_list:
+        pass
+    else:
+        if key == 1:
+            print(1)
+        elif key == 2:
+            print(2)
+
 
 #Класс чанка
 class Chunk():
@@ -87,6 +98,11 @@ for i in range(625):
     chuncks_types.append(just_type)
 chuncks_file.close()
 
+#Чтение файла с общей информацией
+info_file = open('game_info.txt','r')
+rnd_events_list = list(map(int,info_file.readline().split()))
+info_file.close()
+
 
 window = pygame.display.set_mode((0,0), pygame.RESIZABLE)
 fullscreen = pygame.display.set_mode((0,0), pygame.RESIZABLE)
@@ -106,6 +122,13 @@ for i in range(len(chunks)):
 
 while not finished:
     clock.tick(FPS)
+    random_event_timer+=1
+    if random_event_timer == 1200:
+        print('hello')
+        rnd_num = random.randint(1,32)
+        #Обработка случайного события
+        random_event(rnd_num)
+        random_event_timer=0
     screen.fill(WHITE)
     mouse_x, mouse_y = pygame.mouse.get_pos()
     mouse_on_chunk_x, mouse_on_chunk_y = ((mouse_x + cam_x)//tile_size,(mouse_y + cam_y)//tile_size)
@@ -149,6 +172,11 @@ while not finished:
                 for i in range(625):
                     chuncks_file.write(str(chuncks_texture_codes[i])+'  '+chuncks_types[i]+'\n')
                 chuncks_file.close()
+
+                info_file = open('game_info.txt','w')
+                info_file.seek(0)
+                for i in range(len(rnd_events_list)):
+                    info_file.write(str(rnd_events_list[i])+' ')
 
                 #закрываем программу
                 finished = True
