@@ -105,10 +105,10 @@ while not finished:
         if cam_y >= 15:
             cam_y -= cam_speed
     if key[pygame.K_d]:
-        if cam_x <= 384 * tile_size - 580:
+        if cam_x <= world_size_chunk_x * tile_size - res[0] - cam_speed:
             cam_x += cam_speed
     if key[pygame.K_s]:
-        if cam_y <= 256 * tile_size - 580:
+        if cam_y <= world_size_chunk_y * tile_size - res[1] - cam_speed:
             cam_y += cam_speed
 
     #рендерим чанки, которые отображаются на экране
