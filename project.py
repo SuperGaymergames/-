@@ -8,8 +8,6 @@ from tkinter import messagebox
 
 FPS = 60
 
-WIDTH = 1540
-HEIGHT = 900
 chunk_size = 1
 #tile_size соответсвует разрешению изображения
 tile_size = 150
@@ -57,11 +55,16 @@ def generate_tile(x, y, chunk_x, chunk_y):
     tile_y = (chunk_y//tile_size) + y
     return int((chunk_x//chunk_size//tile_size)%2 == 0)
 
+#Функция вызова меню магазина (не сделано)
+def open_menu():
+    pass
+
 
 #Класс чанка
 class Chunk():
-    def __init__(self, x, y):
+    def __init__(self, x, y, type='map'):
         self.x, self.y = x, y
+        self.type = type
         self.map = [generate_tile(-1, y, self.x, self.y) for y in range(chunk_size) for x in range(chunk_size)]
 
     #render() прорисовывает нужный нам чанк, выцеживая, какая у него текстура(не прописано)
@@ -71,22 +74,20 @@ class Chunk():
                 texture = textures[texture_code][0]
                 screen.blit(texture, (self.x + x*tile_size - cam_x, self.y + y*tile_size - cam_y))
 
+"""Запуск игры, вытягивание всей информации из файлов, инициализация объектов"""
 
 #Чтение файла с кодами текстур чанков из памяти
 chuncks_file = open('chuncks.txt','r+')
 chuncks_texture_codes=[]
+chuncks_types=[]
 for i in range(625):
-    just_code = chuncks_file.readline()
+    chunk_info = chuncks_file.readline()
+    just_code, just_type = chunk_info.split()
     chuncks_texture_codes.append(int(just_code))
+    chuncks_types.append(just_type)
 chuncks_file.close()
 
 
-
-
-
-
-
-c=0
 window = pygame.display.set_mode((0,0), pygame.RESIZABLE)
 fullscreen = pygame.display.set_mode((0,0), pygame.RESIZABLE)
 screen = pygame.transform.scale(window,res)
@@ -97,11 +98,20 @@ chunks = []
 for y in range(world_size_chunk_y):
     for x in range(world_size_chunk_x):
         chunks.append(Chunk(x*chunk_size*tile_size, y*chunk_size*tile_size))
+
+for i in range(len(chunks)):
+    chunks[i].type = chuncks_types[i]
+
+"""Конец запуска игры. Собственно игровой процесс"""
+
 while not finished:
     clock.tick(FPS)
     screen.fill(WHITE)
     mouse_x, mouse_y = pygame.mouse.get_pos()
-    print(clock.get_fps())
+    mouse_on_chunk_x, mouse_on_chunk_y = ((mouse_x + cam_x)//tile_size,(mouse_y + cam_y)//tile_size)
+    mouse_on_chunk_number = mouse_on_chunk_y * 25 + mouse_on_chunk_x
+    #print(mouse_on_chunk_x, mouse_on_chunk_y)
+    #print(clock.get_fps())
 
     #обработка зажатых клавиш
     key = pygame.key.get_pressed()
@@ -137,10 +147,18 @@ while not finished:
                 chuncks_file = open('chuncks.txt','w')
                 chuncks_file.seek(0)
                 for i in range(625):
-                    chuncks_file.write(str(chuncks_texture_codes[i])+'\n')
+                    chuncks_file.write(str(chuncks_texture_codes[i])+'  '+chuncks_types[i]+'\n')
                 chuncks_file.close()
 
                 #закрываем программу
                 finished = True
+
+        #обработка нажатия мыши
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                #проверка типа нажатого тейла и соответсвующая обработка события
+                if chuncks_types[mouse_on_chunk_number] == 'open1':
+                    print(2)
+
 
 pygame.quit()
